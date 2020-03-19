@@ -1,154 +1,157 @@
 
 from PIL import Image, ImageGrab
 
-from tkinter import ttk, Text, Entry, Scrollbar, VERTICAL, HORIZONTAL, RIGHT,Y
+from tkinter import ttk, Text, Entry, Scrollbar, VERTICAL, \
+HORIZONTAL, RIGHT,Y, messagebox, YES, NO, X, Y
 import tkinter as tk
 
-import sqlite3
+from db import *
 
-import base64
-
-DATABASE = 'StudyHelper.db'
 
 # q represents quesiton
 # a represents answer
 
 qPic = None
 aPic = None
+firstClick = True
 
+def showNextItem():
+    if readNextItemFromDB():
+        global qPicLabel , qPic #有生命周期的问题，必须使用全局变量
+        qPic = tk.PhotoImage(file="qPic.png")
+        qPicLabel.config(image=qPic)
 
-def init_db():
-    #create database and tables
-    
-    sqliteDB = sqlite3.connect(DATABASE)
-    print ("Opened database successfully")
+        global aPicLabel , aPic #有生命周期的问题，必须使用全局变量
+        aPic = tk.PhotoImage(file="aPic.png")
+        aPicLabel.config(image=aPic)
+        aPicLabel.pack_forget()
+    else:
+        messagebox.showinfo("warn", "Nothing need to review today")
 
-    #sqliteDB.execute('DROP TABLE IF exists student')
-    sqliteDB.execute('CREATE TABLE IF NOT EXISTS item (id INTEGER PRIMARY KEY AUTOINCREMENT, qPic LONGBOLB, aPic LONGBOLB, createTime timestamp, lastShowTime timestamp)')
-
-    print ("Tables created successfully")
-
-
-def focusOnQEntry():
+def focusOnQEntry(self):
     im = ImageGrab.grabclipboard()
+    if im == None:
+        return
     im.save('qPic.png', 'png')
-    global qPicLabel , qPic #有生命周期的问题，必须使用全局变量
+    global qPicLabel , qPic, addBtn #有生命周期的问题，必须使用全局变量
     qPic = tk.PhotoImage(file="qPic.png")
     qPicLabel.config(image=qPic)
+    addBtn.focus_set()
+    print("question focus")
 
-def focusOnAEntry():
+def focusOnAEntry(self):
     im = ImageGrab.grabclipboard()
+    if im == None:
+        return
     im.save('aPic.png', 'png')
     global aPicLabel , aPic #有生命周期的问题，必须使用全局变量
     aPic = tk.PhotoImage(file="aPic.png")
     aPicLabel.config(image=aPic)
     aPicLabel.pack()
+    addBtn.focus_set()
+    print("answer focus")
 
+def addItem():
+    res = saveCurrentItemToDB("qPic.png", "aPic.png")
+    if res == None:
+        controlLable.config(text="Add item success!");
+    else:
+        controlLable.config(text=res);
 
-def addImage():
-    saveCurrentImageToDB("qPic.png", "aPic.png")
+def checkFirstClick():
+    global firstClick
+    if firstClick:
+        firstClick = False
+        showAnswer()
+        return True
+    firstClick = True
+    return False
 
-
-# def addImageFromAddress():
-#     global qPicLabel , qPic #有生命周期的问题，必须使用全局变量
-#     qText = qEntry.get()
-#     qPic = tk.PhotoImage(file=qText)
-#     print(qText)
-#     qPicLabel.config(image=qPic)
-
-#     global aPicLabel , aPic #有生命周期的问题，必须使用全局变量
-#     aText = aEntry.get()
-#     aPic = tk.PhotoImage(file=aText)
-#     print(aText)
-#     aPicLabel.config(image=aPic)
-#     saveImageToDB(qText, aText)
-
-
-# def saveImageToDB(qPicAddress, aPicAddress):
-#     with open(qPicAddress, "rb") as f1:
-#         with open(aPicAddress, "rb") as f2:
-#             qRes = base64.b64encode(f1.read())
-#             aRes = base64.b64encode(f2.read())
-
-#             conn = sqlite3.connect(DATABASE)
-#             c = conn.cursor()
-#             c.execute("INSERT INTO item(qPic, aPic, createTime, lastShowTime) VALUES(?,?,datetime(),datetime())", (qRes, aRes))
-#             conn.commit()
-#             c.close()
-#             conn.close()
-
-def saveCurrentImageToDB(qPicAddress, aPicAddress):
-    with open(qPicAddress, "rb") as f1:
-        with open(aPicAddress, "rb") as f2:
-            qRes = base64.b64encode(f1.read())
-            aRes = base64.b64encode(f2.read())
-
-            conn = sqlite3.connect(DATABASE)
-            c = conn.cursor()
-            c.execute("INSERT INTO item(qPic, aPic, createTime, lastShowTime) VALUES(?,?,datetime(),datetime())", (qRes, aRes))
-            conn.commit()
-            c.close()
-            conn.close()
-
-
-def readImageFromDB():
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("SELECT * FROM item order by lastShowTime ASC")
-
-    item = c.fetchone()
-    id = item[0]
-    c.execute("UPDATE item SET lastShowTime=datetime() WHERE id=?", (id,))
-    conn.commit()
-    c.close()
-    conn.close()
-    if item == None:
+def clickNextV():
+    if checkFirstClick():
         return
-    data1 = base64.b64decode(item[1])
-    data2 = base64.b64decode(item[2])
-    with open("qPic.png", "wb") as f1:
-        f1.write(data1)
-    with open("aPic.png", "wb") as f2:
-        f2.write(data2)
+    updateCurrentItemShowTime()
+    showNextItem()
 
-    global qPicLabel , qPic #有生命周期的问题，必须使用全局变量
-    qPic = tk.PhotoImage(file="qPic.png")
-    qPicLabel.config(image=qPic)
-
-    global aPicLabel , aPic #有生命周期的问题，必须使用全局变量
-    aPic = tk.PhotoImage(file="aPic.png")
-    aPicLabel.config(image=aPic)
-    aPicLabel.pack_forget()
+def clickNextX():
+    if checkFirstClick():
+        return
+    updateCurrentItemShowTime()
+    updateCurrentItemFailTime()
+    showNextItem()
 
 def showAnswer():
     aPicLabel.pack()
 
+def deleteCurrentItem():
+     #msg box, really to delete?
+    if not messagebox.askokcancel("Warning", "Really to delete current images?"):
+        return
 
+    res = deleteCurrentItemFromDB()
+    if not res:
+        messagebox.showerror("error", res)
 
+#============================================================================
+# main
+#============================================================================
 init_db()
 root = tk.Tk()
+root.title("StudyReviewer")
+panelFrame = tk.Frame(root)
+countFrame = tk.Frame(panelFrame)
+controlFrame = tk.Frame(panelFrame)
+nextFrame = tk.Frame(panelFrame)
+
+#count labels
+lastReviewTimeLabel = tk.Label(countFrame, text="Last review time:");
+passedFailedTimesLabel = tk.Label(countFrame, text="Passed/Failed:");
+todayTotalReviewCountLabel = tk.Label(countFrame, text="Today reviewed/ totally:");
 
 #address
-qEntry = Entry(root, text="1", validate="focusin",
-                validatecommand=focusOnQEntry)
+# qEntry = Entry(root, text="1", validate="focusin",
+#                 validatecommand=focusOnQEntry)
+qEntry = Entry(root, text="1")
+qEntry.bind("<FocusIn>", focusOnQEntry)
 
-aEntry = Entry(root, text="2", validate="focusin",
-                validatecommand=focusOnAEntry)
+# aEntry = Entry(root, text="2", validate="focusin",
+#                 validatecommand=focusOnAEntry)
+aEntry = Entry(root, text="2")
+aEntry.bind("<FocusIn>", focusOnAEntry)
 
 qPicLabel = tk.Label(root)
 
 aPicLabel = tk.Label(root)
 
-addBtn = tk.Button(root, text='Add', command  = addImage)
-nextBtn = tk.Button(root, text='Next', command  = readImageFromDB)
-showBtn = tk.Button(root, text='ShowAnswer', command  = showAnswer)
+addBtn = tk.Button(controlFrame, text='Add', command  = addItem)
+deleteBtn = tk.Button(controlFrame, text='Delete', command  = deleteCurrentItem)
+controlLable = tk.Label(controlFrame);
+
+showBtn = tk.Button(nextFrame, text='ShowAnswer', command  = showAnswer)
+nextVBtn = tk.Button(nextFrame, text='Next-V', command  = clickNextV)
+nextXBtn = tk.Button(nextFrame, text='Next-X', command  = clickNextX)
+
 # layout
-addBtn.pack()
-nextBtn.pack()
-showBtn.pack()
-qEntry.pack()
+panelFrame.pack(expand='yes', fill='x')
+countFrame.pack(side='right')
+controlFrame.pack(expand='yes', fill='x')
+nextFrame.pack(expand='yes', fill='x')
+
+lastReviewTimeLabel.pack();
+passedFailedTimesLabel.pack();
+todayTotalReviewCountLabel.pack();
+
+addBtn.pack(side='left')
+deleteBtn.pack(side='left')
+controlLable.pack(side='left')
+
+# showBtn.pack(side='left')
+nextVBtn.pack(side='left')
+nextXBtn.pack(side='left')
+
+qEntry.pack(expand=YES,fill=X)
 qPicLabel.pack()
-aEntry.pack()
+aEntry.pack(expand=YES,fill=X)
 aPicLabel.pack()
 
 
@@ -157,5 +160,7 @@ aPicLabel.pack()
 # S1.pack()
 # sl = Scrollbar(root)
 # sl.pack(side = RIGHT,fill = Y)
-readImageFromDB()
+   
+
+showNextItem()
 root.mainloop()
