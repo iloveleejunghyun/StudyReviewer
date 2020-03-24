@@ -5,12 +5,12 @@ import base64
 
 
 DATABASE = 'StudyReviewer.db'
+DATABASE_BACKUP = 'F:\\backupdb\\backup.db'
 
 currentItemId =None
 
 def init_db():
     #create database and tables
-    
     sqliteDB = sqlite3.connect(DATABASE)
     print ("Opened database successfully")
 
@@ -43,20 +43,28 @@ def init_db():
     except sqlite3.OperationalError:
         conn.execute('ALTER TABLE item ADD lastFailTime TIMESTAMP')
  
+    #backup db
+    backupDB(DATABASE, DATABASE_BACKUP)
+
     # c.execute("UPDATE item SET lastShowTime= DATETIME('now', 'localtime','-1 day')")
     # conn.commit()
-    c.execute("SELECT lastFailTime, lastShowTime FROM item WHERE DATE(lastFailTime) == DATE('now', 'localtime', '-1 day')")
+    # c.execute("SELECT lastFailTime, lastShowTime FROM item WHERE DATE(lastFailTime) == DATE('now', 'localtime', '-1 day')")
     # c.execute("SELECT DATEtime('now', 'localtime','-1 day')")
 
-    item = c.fetchall()
-    if item != None:
-        print(list(item))
-        print(len(item))
+    # item = c.fetchall()
+    # if item != None:
+    #     print(list(item))
+    #     print(len(item))
     c.close()
     conn.close()
     print ("Tables created successfully")
+    return True
 
-
+def backupDB(dbName, backFileName):
+    with open(dbName, 'rb') as read:
+        with open(backFileName,'wb') as f:
+            for line in read.readlines():
+                f.write(line)
 
 
 # def addImageFromAddress():
@@ -123,7 +131,7 @@ def saveCurrentItemToDB(qPicAddress, aPicAddress):
 def updateCurrentItemShowTime():
     #update current item last_show_time
     global currentItemId
-    if not currentItemId:
+    if currentItemId:
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
         c.execute("UPDATE item SET lastShowTime=datetime('now', 'localtime') WHERE id=?", (currentItemId,))
@@ -146,7 +154,6 @@ def readNextItemFromDB():
     global currentItemId
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-    #c.execute("SELECT * FROM item WHERE DATE(lastShowTime) != DATE('now') and DATE(lastFailTime) in (DATE('now', '-1 day'), DATE('now', '-2 day'), DATE('now', '-4 day'), DATE('now', '-7 day'), DATE('now', '-14 day') ) order by lastFailTime ASC")
     c.execute("SELECT * FROM item WHERE DATE(lastShowTime) != DATE('now', 'localtime') and DATE(lastFailTime) in (DATE('now', 'localtime', '-1 day'), DATE('now', 'localtime', '-2 day'), DATE('now', 'localtime', '-4 day'), DATE('now', 'localtime', '-7 day'), DATE('now', 'localtime', '-14 day') ) order by lastFailTime ASC")
 
     item = c.fetchone()
@@ -154,7 +161,7 @@ def readNextItemFromDB():
         #no data in current database
         print("no data in database to show")
         return False
-    print(item)
+    print(item[0])
     currentItemId = item[0]
     # c.execute("UPDATE item SET lastShowTime = datetime('now', 'localtime') WHERE id=?", (currentItemId,))
     # conn.commit()
@@ -186,3 +193,14 @@ def deleteCurrentItemFromDB():
     currentItemId = None
     readNextItemFromDB()
     return None
+
+def getReviewItemCountToday():
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM item WHERE DATE(lastShowTime) != DATE('now', 'localtime') and DATE(lastFailTime) in (DATE('now', 'localtime', '-1 day'), DATE('now', 'localtime', '-2 day'), DATE('now', 'localtime', '-4 day'), DATE('now', 'localtime', '-7 day'), DATE('now', 'localtime', '-14 day') ) order by lastFailTime ASC")
+    toReviewCount = c.fetchone()[0]
+    c.execute("SELECT COUNT(*) FROM item WHERE DATE(lastShowTime) == DATE('now', 'localtime') and DATE(lastFailTime) in (DATE('now', 'localtime', '-1 day'), DATE('now', 'localtime', '-2 day'), DATE('now', 'localtime', '-4 day'), DATE('now', 'localtime', '-7 day'), DATE('now', 'localtime', '-14 day') ) order by lastFailTime ASC")
+    reviewedSuccessCount = c.fetchone()[0]
+    c.execute("SELECT COUNT(*) FROM item WHERE DATE(lastShowTime) == DATE('now', 'localtime') and DATE(lastFailTime) == DATE('now', 'localtime') and DATE(createTime) != DATE('now', 'localtime')")
+    reviewedFailTodayCount = c.fetchone()[0]
+    return (reviewedSuccessCount+reviewedFailTodayCount, reviewedSuccessCount+reviewedFailTodayCount+toReviewCount)
