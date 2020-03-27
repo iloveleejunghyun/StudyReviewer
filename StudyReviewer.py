@@ -2,11 +2,11 @@
 from PIL import Image, ImageGrab
 from threading import Timer
 from tkinter import ttk, Text, Entry, Scrollbar, VERTICAL, \
-HORIZONTAL, RIGHT,Y, messagebox, YES, NO, X, Y
+HORIZONTAL, RIGHT,Y, messagebox, YES, NO, X, Y, Canvas, LEFT, BOTH, NW
 import tkinter as tk
 
 from db import *
-
+from scrolltest import QAFrame
 
 # q represents quesiton
 # a represents answer
@@ -31,15 +31,20 @@ def cleanInfo():
     infoTimer = None
 
 def showNextItem():
-    if readNextItemFromDB():
-        global qPicLabel , qPic #有生命周期的问题，必须使用全局变量
+    res, passTimes, failTimes, lastFailTime, lastShowTime = readNextItemFromDB()
+    if res:
+        # global qPicLabel , qPic #有生命周期的问题，必须使用全局变量
+        global qPic, aPic
         qPic = tk.PhotoImage(file="qPic.png")
-        qPicLabel.config(image=qPic)
 
-        global aPicLabel , aPic #有生命周期的问题，必须使用全局变量
+        # global aPicLabel , aPic #有生命周期的问题，必须使用全局变量
         aPic = tk.PhotoImage(file="aPic.png")
-        aPicLabel.config(image=aPic)
-        aPicLabel.pack_forget()
+        qaFrame.updateQLabel(qPic)
+        qaFrame.updateALabel(aPic)
+        qaFrame.hideALabel()
+
+        lastReviewTimeLabel.configure(text=f"Last failed time:{lastFailTime}")
+        passedFailedTimesLabel.configure(text=f"Passed/Failed:{passTimes}/{failTimes}")
     else:
         messagebox.showinfo("warn", "Nothing need to review today")
     reviewedCount, totalCount = getReviewItemCountToday()
@@ -50,9 +55,12 @@ def focusOnQEntry(self):
     if im == None:
         return
     im.save('qPic.png', 'png')
-    global qPicLabel , qPic, addBtn #有生命周期的问题，必须使用全局变量
+    # global qPicLabel , qPic, addBtn #有生命周期的问题，必须使用全局变量
+    # qPic = tk.PhotoImage(file="qPic.png")
+    # qPicLabel.config(image=qPic)
+    global qPic, addBtn #有生命周期的问题，必须使用全局变量
     qPic = tk.PhotoImage(file="qPic.png")
-    qPicLabel.config(image=qPic)
+    qaFrame.updateQLabel(qPic)
     addBtn.focus_set()
     print("question focus")
 
@@ -61,10 +69,15 @@ def focusOnAEntry(self):
     if im == None:
         return
     im.save('aPic.png', 'png')
-    global aPicLabel , aPic #有生命周期的问题，必须使用全局变量
+    # global aPicLabel , aPic #有生命周期的问题，必须使用全局变量
+    # aPic = tk.PhotoImage(file="aPic.png")
+    # aPicLabel.config(image=aPic)
+    # aPicLabel.pack()
+    global aPic #有生命周期的问题，必须使用全局变量
     aPic = tk.PhotoImage(file="aPic.png")
-    aPicLabel.config(image=aPic)
-    aPicLabel.pack()
+    qaFrame.updateALabel(aPic)
+    qaFrame.showALabel()
+
     addBtn.focus_set()
     print("answer focus")
 
@@ -89,18 +102,18 @@ def checkFirstClick():
 def clickNextV():
     if checkFirstClick():
         return
-    updateCurrentItemShowTime()
+    updateCurrentItem(lastShowTime=True, passTimes='+1')
     showNextItem()
 
 def clickNextX():
     if checkFirstClick():
         return
-    updateCurrentItemShowTime()
-    updateCurrentItemFailTime()
+    updateCurrentItem(lastShowTime=True, failTimes='+1')
     showNextItem()
 
 def showAnswer():
-    aPicLabel.pack()
+    # aPicLabel.pack()
+    qaFrame.showALabel()
 
 def deleteCurrentItem():
      #msg box, really to delete?
@@ -132,28 +145,21 @@ panelFrame = tk.Frame(root)
 countFrame = tk.Frame(panelFrame)
 controlFrame = tk.Frame(panelFrame)
 nextFrame = tk.Frame(panelFrame)
-
+qaFrame = QAFrame(root, focusOnQEntry, focusOnAEntry)
 #count labels
-lastReviewTimeLabel = tk.Label(countFrame, text="Last review time:");
+lastReviewTimeLabel = tk.Label(countFrame, text="Last failed time:");
 passedFailedTimesLabel = tk.Label(countFrame, text="Passed/Failed:");
 todayTotalReviewCountLabel = tk.Label(countFrame, text="Today reviewed :");
 
 #address
-# qEntry = Entry(root, text="1", validate="focusin",
-#                 validatecommand=focusOnQEntry)
-qEntry = Entry(root, text="1")
-qEntry.bind("<FocusIn>", focusOnQEntry)
+# qEntry = Entry(root, text="1")
+# qEntry.bind("<FocusIn>", focusOnQEntry)
 
-# aEntry = Entry(root, text="2", validate="focusin",
-#                 validatecommand=focusOnAEntry)
-aEntry = Entry(root, text="2")
-aEntry.bind("<FocusIn>", focusOnAEntry)
+# aEntry = Entry(root, text="2")
+# aEntry.bind("<FocusIn>", focusOnAEntry)
 
-scrollbar = Scrollbar(root)
-scrollbar.pack(side=RIGHT, fill=Y)
-qPicLabel = tk.Label(root, yscrollcommand=scrollbar.set)
-scrollbar.config(command=qPicLabel.yview)
-aPicLabel = tk.Label(root)
+# qPicLabel = tk.Label(root)
+# aPicLabel = tk.Label(root)
 
 addBtn = tk.Button(controlFrame, text='Add', command  = addItem)
 deleteBtn = tk.Button(controlFrame, text='Delete', command  = deleteCurrentItem)
@@ -166,7 +172,7 @@ nextVBtn = tk.Button(nextFrame, text='Next-V', command  = clickNextV)
 
 
 # layout
-panelFrame.pack(expand='yes', fill='x')
+panelFrame.pack(side='top', expand='yes', fill='x')
 countFrame.pack(side='right')
 controlFrame.pack(expand='yes', fill='x')
 nextFrame.pack(expand='yes', fill='x')
@@ -182,11 +188,13 @@ controlLable.pack(side='left')
 nextXBtn.pack(side='left')
 nextVBtn.pack(side='left')
 
-qEntry.pack(expand=YES,fill=X)
-qPicLabel.pack()
-aEntry.pack(expand=YES,fill=X)
-aPicLabel.pack()
 
+
+qaFrame.pack()
+# qEntry.pack(expand=YES,fill=X)
+# qPicLabel.pack()
+# aEntry.pack(expand=YES,fill=X)
+# aPicLabel.pack()
 
 
 # S1=Scrollbar(root,orient=HORIZONTAL)
