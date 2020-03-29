@@ -5,7 +5,8 @@ import base64
 
 
 DATABASE = 'StudyReviewer.db'
-DATABASE_BACKUP = 'F:\\backupdb\\backup.db'
+# DATABASE_BACKUP = 'F:\\backupdb\\backup.db'
+DATABASE_BACKUP = 'backup.db'
 
 currentItemId =None
 
@@ -138,27 +139,6 @@ def updateCurrentItem(itemId = None, lastShowTime = None, passTimes = None, fail
         c.close()
         conn.close()
 
-# def updateCurrentItemShowTime():
-#     #update current item last_show_time
-#     global currentItemId
-#     if currentItemId:
-#         conn = sqlite3.connect(DATABASE)
-#         c = conn.cursor()
-#         c.execute("UPDATE item SET lastShowTime=datetime('now', 'localtime') WHERE id=?", (currentItemId,))
-#         conn.commit()
-#         c.close()
-#         conn.close()
-
-
-# def updateCurrentItemFailTime():
-#     conn = sqlite3.connect(DATABASE)
-#     c = conn.cursor()
-#     global currentItemId
-#     c.execute("UPDATE item SET lastFailTime=datetime('now', 'localtime') WHERE id=?", (currentItemId,))
-#     conn.commit()
-#     c.close()
-#     conn.close()
-
 def readNextItemFromDB(itemId = None):
 
     global currentItemId
@@ -202,16 +182,9 @@ def deleteCurrentItemFromDB():
     global currentItemId
     if not currentItemId:
         #msg box no id
-        # messagebox.showinfo("Error","Can't find current item. No Picture!")
         return "Error","Can't find current item. No Picture!"
 
     deleteItemFromDB(currentItemId)
-    # conn = sqlite3.connect(DATABASE)
-    # c = conn.cursor()
-    # c.execute("DELETE FROM item WHERE id = ?", (currentItemId,))
-    # conn.commit()
-    # c.close()
-    # conn.close()
     currentItemId = None
     readNextItemFromDB()
     return None
@@ -235,3 +208,50 @@ def getReviewItemCountToday():
     c.execute("SELECT COUNT(*) FROM item WHERE DATE(lastShowTime) == DATE('now', 'localtime') and DATE(lastFailTime) == DATE('now', 'localtime') and DATE(createTime) != DATE('now', 'localtime')")
     reviewedFailTodayCount = c.fetchone()[0]
     return (reviewedSuccessCount+reviewedFailTodayCount, reviewedSuccessCount+reviewedFailTodayCount+toReviewCount)
+
+def init_deleteItem():
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS deleteItem AS SELECT * FROM item WHERE 1=2")
+    conn.commit()
+    c.close()
+    conn.close() 
+    pass
+
+def moveItemToDeleteItem(itemId):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("INSERT INTO deleteItem SELECT * FROM item WHERE id=(?)", (itemId,))
+    c.execute("DELETE FROM item WHERE id=(?)", (itemId,))
+    conn.commit()
+    c.close()
+    conn.close()
+    pass
+
+def readDeleteItem(itemId):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT id, qPic, aPic, passTimes, failTimes, lastFailTime, lastShowTime FROM deleteItem WHERE id=(?)", (itemId,))
+    item = c.fetchone()
+    if item == None:
+        #no data in current database
+        print("no data in database to show")
+        return False, 0, 0, 0, 0
+    c.close()
+    conn.close()
+
+    passTimes = item[3]
+    failTimes = item[4]
+    lastFailTime = item[5]
+    lastShowTime = item[6]
+    return True, passTimes, failTimes, lastFailTime, lastShowTime
+    pass
+
+def deleteDeleteItem(itemId):
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("DELETE FROM deleteItem WHERE id=(?)", (itemId,))
+    conn.commit()
+    c.close()
+    conn.close()
+    pass

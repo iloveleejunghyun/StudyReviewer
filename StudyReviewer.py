@@ -5,7 +5,7 @@ from tkinter import ttk, Text, Entry, Scrollbar, VERTICAL, \
 HORIZONTAL, RIGHT,Y, messagebox, YES, NO, X, Y, Canvas, LEFT, BOTH, NW
 import tkinter as tk
 
-from db import *
+import db
 from scrolltest import QAFrame
 
 # q represents quesiton
@@ -31,7 +31,8 @@ def cleanInfo():
     infoTimer = None
 
 def showNextItem():
-    res, passTimes, failTimes, lastFailTime, lastShowTime = readNextItemFromDB()
+    firstClick = True # update click count
+    res, passTimes, failTimes, lastFailTime, lastShowTime = db.readNextItemFromDB()
     if res:
         # global qPicLabel , qPic #有生命周期的问题，必须使用全局变量
         global qPic, aPic
@@ -47,8 +48,10 @@ def showNextItem():
         passedFailedTimesLabel.configure(text=f"Passed/Failed:{passTimes}/{failTimes}")
     else:
         messagebox.showinfo("warn", "Nothing need to review today")
-    reviewedCount, totalCount = getReviewItemCountToday()
+    reviewedCount, totalCount = db.getReviewItemCountToday()
     todayTotalReviewCountLabel.config(text=f"Today reviewed :{reviewedCount}/{totalCount}")
+    addedCount = db.countFromDB(createdToday=True)
+    todayAddedCountLabel.config(text=f"Today Added: {addedCount}")
 
 def focusOnQEntry(self):
     im = ImageGrab.grabclipboard()
@@ -82,7 +85,7 @@ def focusOnAEntry(self):
     print("answer focus")
 
 def addItem():
-    res = saveCurrentItemToDB("qPic.png", "aPic.png")
+    res = db.saveCurrentItemToDB("qPic.png", "aPic.png")
     if res == None:
         showInfoTimer("Add item success!")
         # controlLable.config(text="Add item success!");
@@ -102,13 +105,13 @@ def checkFirstClick():
 def clickNextV():
     if checkFirstClick():
         return
-    updateCurrentItem(lastShowTime=True, passTimes='+1')
+    db.updateCurrentItem(lastShowTime=True, passTimes='+1')
     showNextItem()
 
 def clickNextX():
     if checkFirstClick():
         return
-    updateCurrentItem(lastShowTime=True, failTimes='+1')
+    db.updateCurrentItem(lastShowTime=True, failTimes='+1')
     showNextItem()
 
 def showAnswer():
@@ -120,7 +123,7 @@ def deleteCurrentItem():
     if not messagebox.askokcancel("Warning", "Really to delete current images?"):
         return
 
-    res = deleteCurrentItemFromDB()
+    res = db.deleteCurrentItemFromDB()
     if res:
         messagebox.showerror("error", res)
     showNextItem()
@@ -137,7 +140,7 @@ def processKeyboardEvent(ke):
 #============================================================================
 # main
 #============================================================================
-init_db()
+db.init_db()
 root = tk.Tk()
 root.title("StudyReviewer")
 root.bind(sequence="<Key>", func=processKeyboardEvent)
@@ -150,16 +153,7 @@ qaFrame = QAFrame(root, focusOnQEntry, focusOnAEntry)
 lastReviewTimeLabel = tk.Label(countFrame, text="Last failed time:");
 passedFailedTimesLabel = tk.Label(countFrame, text="Passed/Failed:");
 todayTotalReviewCountLabel = tk.Label(countFrame, text="Today reviewed :");
-
-#address
-# qEntry = Entry(root, text="1")
-# qEntry.bind("<FocusIn>", focusOnQEntry)
-
-# aEntry = Entry(root, text="2")
-# aEntry.bind("<FocusIn>", focusOnAEntry)
-
-# qPicLabel = tk.Label(root)
-# aPicLabel = tk.Label(root)
+todayAddedCountLabel = tk.Label(countFrame, text="Today Added :");
 
 addBtn = tk.Button(controlFrame, text='Add', command  = addItem)
 deleteBtn = tk.Button(controlFrame, text='Delete', command  = deleteCurrentItem)
@@ -177,9 +171,10 @@ countFrame.pack(side='right')
 controlFrame.pack(expand='yes', fill='x')
 nextFrame.pack(expand='yes', fill='x')
 
-lastReviewTimeLabel.pack();
-passedFailedTimesLabel.pack();
-todayTotalReviewCountLabel.pack();
+lastReviewTimeLabel.pack()
+passedFailedTimesLabel.pack()
+todayTotalReviewCountLabel.pack()
+todayAddedCountLabel.pack()
 
 addBtn.pack(side='left')
 deleteBtn.pack(side='left')
@@ -188,21 +183,7 @@ controlLable.pack(side='left')
 nextXBtn.pack(side='left')
 nextVBtn.pack(side='left')
 
-
-
 qaFrame.pack()
-# qEntry.pack(expand=YES,fill=X)
-# qPicLabel.pack()
-# aEntry.pack(expand=YES,fill=X)
-# aPicLabel.pack()
-
-
-# S1=Scrollbar(root,orient=HORIZONTAL)
-# S1.set(0.6,0)
-# S1.pack()
-# sl = Scrollbar(root)
-# sl.pack(side = RIGHT,fill = Y)
-   
 
 showNextItem()
 root.focus_force() # 必须使用， 否则不能获取焦点。 进而不能使用按键快捷键。

@@ -7,7 +7,8 @@ import datetime
 
 class dbtest(unittest.TestCase):
     def setUp(self):
-
+        db.init_db()
+        db.init_deleteItem()
         return super().setUp()
 
     def tearDown(self):
@@ -68,6 +69,22 @@ class dbtest(unittest.TestCase):
     def testCount(self):
         count = db.countFromDB(createdToday = True)
         print(f"Today added {count} items")
+
+    def testDeleteItem(self):
+        itemId = 0
+        db.deleteItemFromDB(itemId)
+        time = '2020-03-25 00:00:47'
+        db.insertItemToDB(0,None, None, time, time, time, 1, 2 )
+        db.moveItemToDeleteItem(itemId)
+        res, passTimes, failTimes, lastFailTime, lastShowTime = db.readNextItemFromDB(itemId)
+        self.assertFalse(res)
+        res, passTimes, failTimes, lastFailTime, lastShowTime = db.readDeleteItem(itemId)
+        self.assertTrue(res)
+        res = db.deleteDeleteItem(itemId)
+        res, passTimes, failTimes, lastFailTime, lastShowTime = db.readDeleteItem(itemId)
+        self.assertFalse(res)
+    
+
 
 if __name__ == '__main__':
     unittest.main()
