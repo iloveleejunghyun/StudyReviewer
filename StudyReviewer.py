@@ -87,6 +87,8 @@ def focusOnAEntry(self):
 def addItem():
     res = db.saveCurrentItemToDB("qPic.png", "aPic.png")
     if res == None:
+        addedCount = db.countFromDB(createdToday=True)
+        todayAddedCountLabel.config(text=f"Today Added: {addedCount}")
         showInfoTimer("Add item success!")
         # controlLable.config(text="Add item success!");
     else:
