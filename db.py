@@ -190,12 +190,13 @@ def deleteCurrentItemFromDB():
     return None
 
 def deleteItemFromDB(itemId):
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("DELETE FROM item WHERE id = ?", (itemId,))
-    conn.commit()
-    c.close()
-    conn.close()
+    # conn = sqlite3.connect(DATABASE)
+    # c = conn.cursor()
+    # c.execute("DELETE FROM item WHERE id = ?", (itemId,))
+    # conn.commit()
+    # c.close()
+    # conn.close()
+    moveItemToDeleteItem(itemId)
     return None
 
 def getReviewItemCountToday():
