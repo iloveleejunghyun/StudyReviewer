@@ -86,14 +86,15 @@ class dbtest(unittest.TestCase):
         res, passTimes, failTimes, lastFailTime, lastShowTime = db.readDeleteItem(itemId)
         self.assertFalse(res)
     
-    def testHotkey(self):
-        def call1():
-            print("press f1")
-        def call2():
-            print("press f2")
-        hot = Hotkey(call1, call2)
-        hot.listenDaemon()
-        time.sleep(5.0)
+    # def testHotkey(self):
+    #     def call1():
+    #         print("press f1")
+    #     def call2():
+    #         print("press f2")
+    #     hot = Hotkey(call1, call2)
+    #     hot.listenDaemon()
+    #     time.sleep(5.0)
+    #     #https://github.com/moses-palmer/pynput/issues/6
 
 if __name__ == '__main__':
     unittest.main()
