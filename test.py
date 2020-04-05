@@ -4,7 +4,7 @@ import os
 import sys
 import hashlib
 import datetime
-from hotkey import Hotkey
+# from hotkey import Hotkey
 import time
 
 class dbtest(unittest.TestCase):
