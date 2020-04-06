@@ -40,7 +40,10 @@ class StudyReviewerWindow(tk.Frame):
         self.addBtn = tk.Button(self.controlFrame, text='Add', command  = self.addItem)
         self.deleteBtn = tk.Button(self.controlFrame, text='Delete', command  = self.deleteCurrentItem)
         self.controlLable = tk.Label(self.controlFrame);
-
+        self.classList = tk.Listbox(self.controlFrame);
+        self.classList.insert(0,"202")
+        self.classList.insert(1,"272")
+        self.classList.insert(2,"273")
 
         self.showBtn = tk.Button(self.nextFrame, text='ShowAnswer', command  = self.showAnswer)
         self.nextXBtn = tk.Button(self.nextFrame, text='Next-X', command  = self.clickNextX)
@@ -61,6 +64,7 @@ class StudyReviewerWindow(tk.Frame):
         self.addBtn.pack(side='left')
         self.deleteBtn.pack(side='left')
         self.controlLable.pack(side='left')
+        self.classList.pack(side='left', anchor='w')
 
         self.nextXBtn.pack(side='left')
         self.nextVBtn.pack(side='left')
@@ -140,6 +144,9 @@ class StudyReviewerWindow(tk.Frame):
         print("answer focus")
 
     def addItem(self):
+        state = self.classList.get(tk.ANCHOR)
+        print(f"select {state}")
+
         res = db.saveCurrentItemToDB("qPic.png", "aPic.png")
         if res == None:
             addedCount = db.countFromDB(createdToday=True)
