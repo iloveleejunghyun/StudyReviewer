@@ -1,40 +1,10 @@
-# from tkinter import *
-# root=Tk()
-# frame=Frame(root,width=300,height=300)
-# frame.pack(expand=True, fill=BOTH) #.grid(row=0,column=0)
-# canvas=Canvas(frame,bg='#FFFFFF',width=300,height=300,scrollregion=(0,0,500,500))
-# # canvas=Canvas(frame)
-# vbar=Scrollbar(frame,orient=VERTICAL)
-# vbar.pack(side=RIGHT,fill=Y)
-# vbar.config(command=canvas.yview)
-# canvas.config(width=300,height=300)
-# canvas.config(yscrollcommand=vbar.set)
-
-# qPic = PhotoImage(file="1.png")
-
-# label1 = Label(canvas)
-# label1.config(image=qPic)
-# label1.pack()
-# # label2 = Label(canvas)
-# # label2.config(image=qPic)
-# # label2.pack()
-# # label3 = Label(canvas)
-# # label3.config(image=qPic)
-# # label3.pack()
-# # canvas.config(image=qPic)
-
-# #canvas.create_image(0, 0, image=qPic, anchor=NW)
-# canvas.pack(side=LEFT,expand=True,fill=BOTH)
-# canvas.config(scrollregion=(0,0,qPic.width(),1500))
-# root.mainloop()
-
 
 import tkinter as tk  # python 3
 # import Tkinter as tk  # python 2
 
 # qPic = None
 class QAFrame(tk.Frame):
-    def __init__(self, root, focusOnQEntry, focusOnAEntry):
+    def __init__(self, root, onQButton, onAButton):
 
         tk.Frame.__init__(self, root)
         self.canvas = tk.Canvas(root, borderwidth=0, background="#DCDCDC")
@@ -50,8 +20,10 @@ class QAFrame(tk.Frame):
 
 
 
-        self.qEntry = tk.Entry(self.frame)
-        self.qEntry.bind("<FocusIn>", focusOnQEntry)
+        # self.qEntry = tk.Entry(self.frame)
+        # self.qEntry.bind("<FocusIn>", focusOnQEntry)
+        self.qButton = tk.Button(self.frame, text="Paste Question(F1)", command=onQButton)
+        # self.qButton.bind("<FocusIn>", onQButton)
         # self.qEntry.pack()
 
         # self.qPic = tk.PhotoImage(file="1.png")
@@ -60,8 +32,9 @@ class QAFrame(tk.Frame):
         # self.qLabel.pack()
 
 
-        self.aEntry = tk.Entry(self.frame)
-        self.aEntry.bind("<FocusIn>", focusOnAEntry)
+        self.aButton = tk.Button(self.frame, text="Paste Answer(F2)", command=onAButton)
+        # self.aEntry = tk.Entry(self.frame)
+        # self.aEntry.bind("<FocusIn>", focusOnAEntry)
         # self.aEntry.pack()
 
         self.aLabel = tk.Label(self.frame)
@@ -123,9 +96,11 @@ class QAFrame(tk.Frame):
     def pack(self):
         self.vsb.pack(side="right", fill="y")
         self.canvas.pack(side="left", fill="both", expand=True)
-        self.qEntry.pack(expand=True, fill='x')
+        # self.qEntry.pack(expand=True, fill='x')
+        self.qButton.pack(expand=True, fill='x')
         self.qLabel.pack()
-        self.aEntry.pack(expand=True, fill='x')
+        # self.aEntry.pack(expand=True, fill='x')
+        self.aButton.pack(expand=True, fill='x')
         self.aLabel.pack()
         tk.Frame.pack(self, side='top',fill="both", expand=True)
         self.canvas.config(height =70) # minimum height
@@ -134,7 +109,7 @@ if __name__ == "__main__":
     root=tk.Tk()
     entry = tk.Entry(root, text="terwrwe")
     global qPic
-    qPic = tk.PhotoImage(file="2.png")
+    qPic = tk.PhotoImage(file="1.png")
     frame = QAFrame(root, None, None)
     entry.pack()
     frame.pack()

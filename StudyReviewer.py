@@ -37,7 +37,7 @@ class StudyReviewerWindow(tk.Frame):
         self.todayTotalReviewCountLabel = tk.Label(self.countFrame, text="Today reviewed :")
         self.todayAddedCountLabel = tk.Label(self.countFrame, text="Today Added :")
 
-        self.addBtn = tk.Button(self.controlFrame, text='Add', command  = self.addItem)
+        self.addBtn = tk.Button(self.controlFrame, text='Add(F3)', command  = self.addItem)
         self.deleteBtn = tk.Button(self.controlFrame, text='Delete', command  = self.deleteCurrentItem)
         self.controlLable = tk.Label(self.controlFrame);
         self.classList = tk.Listbox(self.controlFrame);
@@ -64,7 +64,7 @@ class StudyReviewerWindow(tk.Frame):
         self.addBtn.pack(side='left')
         self.deleteBtn.pack(side='left')
         self.controlLable.pack(side='left')
-        self.classList.pack(side='left', anchor='w')
+        # self.classList.pack(side='left', anchor='w')
 
         self.nextXBtn.pack(side='left')
         self.nextVBtn.pack(side='left')
@@ -73,7 +73,7 @@ class StudyReviewerWindow(tk.Frame):
 
 
         # add hot key function
-        self.hot = Hotkey(self.focusOnQEntry, self.focusOnAEntry)
+        self.hot = Hotkey(self.focusOnQEntry, self.focusOnAEntry, self.addItem)
         self.hot.listenDaemon()
 
         self.showNextItem()

@@ -2,15 +2,17 @@ from pynput import keyboard
 
 class Hotkey(object):
    
-    def __init__(self, f1Callback, f2Callback):
+    def __init__(self, f1Callback, f2Callback, f3Callback):
         self.COMBINATIONS = [
             {keyboard.Key.f1},
-            {keyboard.Key.f2}
+            {keyboard.Key.f2},
+            {keyboard.Key.f3}
         ]
 
         self.current = set()
         self.onF1 = f1Callback
         self.onF2 = f2Callback
+        self.onF3 = f3Callback
 
     def execute(self, value):
         print (f"Detected hotkey={value}")
@@ -20,6 +22,9 @@ class Hotkey(object):
         if value == keyboard.Key.f2:
             print('f2')
             self.onF2()
+        if value == keyboard.Key.f3:
+            print('f3')
+            self.onF3()
 
 
     def on_press(self, key):
