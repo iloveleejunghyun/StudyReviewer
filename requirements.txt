@@ -1,3 +1,4 @@
 # Add libraries here 1
 pillow
 pynput
+playsound

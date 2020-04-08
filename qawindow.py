@@ -22,7 +22,7 @@ class QAFrame(tk.Frame):
 
         # self.qEntry = tk.Entry(self.frame)
         # self.qEntry.bind("<FocusIn>", focusOnQEntry)
-        self.qButton = tk.Button(self.frame, text="Paste Question(F1)", command=onQButton)
+        self.qButton = tk.Button(self.frame, text="Paste Question(F2)", command=onQButton)
         # self.qButton.bind("<FocusIn>", onQButton)
         # self.qEntry.pack()
 
@@ -32,7 +32,7 @@ class QAFrame(tk.Frame):
         # self.qLabel.pack()
 
 
-        self.aButton = tk.Button(self.frame, text="Paste Answer(F2)", command=onAButton)
+        self.aButton = tk.Button(self.frame, text="Paste Answer(F3)", command=onAButton)
         # self.aEntry = tk.Entry(self.frame)
         # self.aEntry.bind("<FocusIn>", focusOnAEntry)
         # self.aEntry.pack()

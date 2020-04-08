@@ -85,6 +85,9 @@ class dbtest(unittest.TestCase):
         res = db.deleteDeleteItem(itemId)
         res, passTimes, failTimes, lastFailTime, lastShowTime = db.readDeleteItem(itemId)
         self.assertFalse(res)
+    def testSound(self):
+        import playsound
+        playsound.playsound('sound/ding.mp3')
     
     # def testHotkey(self):
     #     def call1():

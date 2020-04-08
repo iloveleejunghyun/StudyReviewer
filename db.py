@@ -5,8 +5,8 @@ import base64
 
 
 DATABASE = 'StudyReviewer.db'
-DATABASE_BACKUP = 'F:\\backupdb\\backup.db'
-# DATABASE_BACKUP = 'backup.db'
+# DATABASE_BACKUP = 'F:\\backupdb\\backup.db'
+DATABASE_BACKUP = 'backup.db'
 
 currentItemId =None
 

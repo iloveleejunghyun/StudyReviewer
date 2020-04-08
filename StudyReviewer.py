@@ -6,8 +6,9 @@ HORIZONTAL, RIGHT,Y, messagebox, YES, NO, X, Y, Canvas, LEFT, BOTH, NW
 import tkinter as tk
 
 import db
-from scrolltest import QAFrame
+from qawindow import QAFrame
 from hotkey import Hotkey
+import sound
 
 # q represents quesiton
 # a represents answer
@@ -37,13 +38,20 @@ class StudyReviewerWindow(tk.Frame):
         self.todayTotalReviewCountLabel = tk.Label(self.countFrame, text="Today reviewed :")
         self.todayAddedCountLabel = tk.Label(self.countFrame, text="Today Added :")
 
-        self.addBtn = tk.Button(self.controlFrame, text='Add(F3)', command  = self.addItem)
+        self.addBtn = tk.Button(self.controlFrame, text='Add(F4)', command  = self.addItem)
         self.deleteBtn = tk.Button(self.controlFrame, text='Delete', command  = self.deleteCurrentItem)
         self.controlLable = tk.Label(self.controlFrame);
         self.classList = tk.Listbox(self.controlFrame);
         self.classList.insert(0,"202")
         self.classList.insert(1,"272")
         self.classList.insert(2,"273")
+        self.classList.insert(3,"others")
+        self.classDic = {
+            "202" : 1,
+            "272" : 2,
+            "273" : 3,
+            "others" : 4
+        }
 
         self.showBtn = tk.Button(self.nextFrame, text='ShowAnswer', command  = self.showAnswer)
         self.nextXBtn = tk.Button(self.nextFrame, text='Next-X', command  = self.clickNextX)
@@ -125,6 +133,7 @@ class StudyReviewerWindow(tk.Frame):
         self.qaFrame.updateQLabel(self.qPic)
         self.addBtn.focus_set()
         print("question focus")
+        sound.ding()
 
     def focusOnAEntry(self, event=None):
         im = ImageGrab.grabclipboard()
@@ -142,11 +151,12 @@ class StudyReviewerWindow(tk.Frame):
 
         self.addBtn.focus_set()
         print("answer focus")
+        sound.ding()
 
     def addItem(self):
-        state = self.classList.get(tk.ANCHOR)
-        print(f"select {state}")
-
+        # state = self.classList.get(tk.ANCHOR)
+        # index = self.classDic[state]
+        # print(f"select {index}")
         res = db.saveCurrentItemToDB("qPic.png", "aPic.png")
         if res == None:
             addedCount = db.countFromDB(createdToday=True)
@@ -155,6 +165,7 @@ class StudyReviewerWindow(tk.Frame):
             # controlLable.config(text="Add item success!");
         else:
             self.showInfoTimer(res)
+            sound.ding()
             # controlLable.config(text=res);
 
     def checkFirstClick(self):
