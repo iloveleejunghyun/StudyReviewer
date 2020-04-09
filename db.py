@@ -134,7 +134,7 @@ def updateCurrentItem(itemId = None, lastShowTime = None, passTimes = None, fail
         if passTimes == '+1':
              c.execute("UPDATE item SET passTimes=passTimes+1 WHERE id=?", (itemId,))
         if failTimes == '+1':
-            c.execute("UPDATE item SET failTimes=failTimes+1 WHERE id=?", (itemId,))
+            c.execute("UPDATE item SET failTimes=failTimes+1, lastFailTime=datetime('now', 'localtime') WHERE id=?", (itemId,))
         conn.commit()
         c.close()
         conn.close()

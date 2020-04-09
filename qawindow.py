@@ -52,7 +52,7 @@ class QAFrame(tk.Frame):
         self.qLabel.config(image=self.qPic)
 
         width = max(self.qPic.width(), self.aPic.width())
-        height = self.qPic.height() + self.aPic.height() + 70
+        height = self.qPic.height() + self.aPic.height() + 60
         print(self.qPic.width(), self.aPic.width(),self.qPic.height(), self.aPic.height())
         print(width, " ", height)
         print(self.winfo_screenheight())
@@ -66,7 +66,7 @@ class QAFrame(tk.Frame):
         self.aLabel.config(image=self.aPic)
 
         width = max(self.qPic.width(), self.aPic.width())
-        height = self.qPic.height() + self.aPic.height() + 50
+        height = self.qPic.height() + self.aPic.height() + 70
         print(self.qPic.width(), self.aPic.width(),self.qPic.height(), self.aPic.height())
         print(width, " ", height)
         self.canvas.config(width = width)
@@ -103,7 +103,7 @@ class QAFrame(tk.Frame):
         self.aButton.pack(expand=True, fill='x')
         self.aLabel.pack()
         tk.Frame.pack(self, side='top',fill="both", expand=True)
-        self.canvas.config(height =70) # minimum height
+        self.canvas.config(height =130) # minimum height
         
 if __name__ == "__main__":
     root=tk.Tk()
