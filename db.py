@@ -15,6 +15,7 @@ def init_db():
     sqliteDB = sqlite3.connect(DATABASE)
     print ("Opened database successfully")
 
+
     #sqliteDB.execute('DROP TABLE IF exists student')
     sqliteDB.execute('CREATE TABLE IF NOT EXISTS item (id INTEGER PRIMARY KEY AUTOINCREMENT, qPic LONGBOLB, aPic LONGBOLB, createTime TIMESTAMP, lastShowTime TIMESTAMP)')
     sqliteDB.close()
@@ -44,6 +45,9 @@ def init_db():
     except sqlite3.OperationalError:
         conn.execute('ALTER TABLE item ADD lastFailTime TIMESTAMP')
  
+    #init for classes
+    init_class()
+
     #backup db
     backupDB(DATABASE, DATABASE_BACKUP)
 
@@ -60,6 +64,34 @@ def init_db():
     conn.close()
     print ("Tables created successfully")
     return True
+
+def init_class():
+    sqliteDB = sqlite3.connect(DATABASE)
+    cur = sqliteDB.cursor()
+    try:
+        cur.execute('SELECT * FROM class')
+        cur.fetchone()
+    except sqlite3.OperationalError:
+        sqliteDB.execute('CREATE TABLE IF NOT EXISTS class (id INTEGER PRIMARY KEY AUTOINCREMENT, createTime TIMESTAMP, name TEXT)')
+        sqliteDB.execute('INSERT INTO class (createTime, name) VALUES(datetime("now", "localtime"), "202")')
+        sqliteDB.execute('INSERT INTO class (createTime, name) VALUES(datetime("now", "localtime"), "272")')
+        sqliteDB.execute('INSERT INTO class (createTime, name) VALUES(datetime("now", "localtime"), "273")')
+        sqliteDB.execute('INSERT INTO class (createTime, name) VALUES(datetime("now", "localtime"), "others")')
+        sqliteDB.commit()
+
+        #add class_id
+        try:
+            cur.execute("SELECT class_id FROM item")
+            cur.fetchone()
+        except sqlite3.OperationalError:
+            sqliteDB.execute('ALTER TABLE item ADD class_id INTEGER')
+        try:
+            cur.execute("SELECT class_id FROM delete_item")
+            cur.fetchone()
+        except sqlite3.OperationalError:
+            sqliteDB.execute('ALTER TABLE delete_item ADD class_id INTEGER')
+    sqliteDB.close()
+
 
 def backupDB(dbName, backFileName):
     with open(dbName, 'rb') as read:

@@ -11,36 +11,16 @@ class QAFrame(tk.Frame):
         self.frame = tk.Frame(self.canvas, background="#DCDCDC")
         self.vsb = tk.Scrollbar(root, orient="vertical", command=self.canvas.yview)
         self.canvas.configure(yscrollcommand=self.vsb.set)
-        # self.vsb.pack(side="right", fill="y")
-        # self.canvas.pack(side="left", fill="both", expand=True)
 
         self.canvas.create_window((4,4), window=self.frame, anchor="nw", 
                                   tags="self.frame")
         self.frame.bind("<Configure>", self.onFrameConfigure)
 
-
-
-        # self.qEntry = tk.Entry(self.frame)
-        # self.qEntry.bind("<FocusIn>", focusOnQEntry)
         self.qButton = tk.Button(self.frame, text="Paste Question(F2)", command=onQButton)
-        # self.qButton.bind("<FocusIn>", onQButton)
-        # self.qEntry.pack()
-
-        # self.qPic = tk.PhotoImage(file="1.png")
         self.qLabel = tk.Label(self.frame)
-        # self.qLabel.config(image=self.qPic)
-        # self.qLabel.pack()
-
-
         self.aButton = tk.Button(self.frame, text="Paste Answer(F3)", command=onAButton)
-        # self.aEntry = tk.Entry(self.frame)
-        # self.aEntry.bind("<FocusIn>", focusOnAEntry)
-        # self.aEntry.pack()
-
         self.aLabel = tk.Label(self.frame)
-        # self.aLabel.config(image=self.qPic)
-        # self.aLabel.pack()
-        
+
         self.qPic = tk.PhotoImage(file="1.png")
         self.aPic = tk.PhotoImage(file="1.png")
         
