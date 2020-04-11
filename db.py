@@ -44,12 +44,6 @@ def init_db():
         item = c.fetchone()
     except sqlite3.OperationalError:
         conn.execute('ALTER TABLE item ADD lastFailTime TIMESTAMP')
- 
-    #init for classes
-    init_class()
-
-    #backup db
-    backupDB(DATABASE, DATABASE_BACKUP)
 
     # c.execute("UPDATE item SET lastShowTime= DATETIME('now', 'localtime','-1 day')")
     # conn.commit()
@@ -62,36 +56,15 @@ def init_db():
     #     print(len(item))
     c.close()
     conn.close()
+
+    #init for classes
+    init_category()
+
+    #backup db
+    backupDB(DATABASE, DATABASE_BACKUP)
+
     print ("Tables created successfully")
     return True
-
-def init_class():
-    sqliteDB = sqlite3.connect(DATABASE)
-    cur = sqliteDB.cursor()
-    try:
-        cur.execute('SELECT * FROM class')
-        cur.fetchone()
-    except sqlite3.OperationalError:
-        sqliteDB.execute('CREATE TABLE IF NOT EXISTS class (id INTEGER PRIMARY KEY AUTOINCREMENT, createTime TIMESTAMP, name TEXT)')
-        sqliteDB.execute('INSERT INTO class (createTime, name) VALUES(datetime("now", "localtime"), "202")')
-        sqliteDB.execute('INSERT INTO class (createTime, name) VALUES(datetime("now", "localtime"), "272")')
-        sqliteDB.execute('INSERT INTO class (createTime, name) VALUES(datetime("now", "localtime"), "273")')
-        sqliteDB.execute('INSERT INTO class (createTime, name) VALUES(datetime("now", "localtime"), "others")')
-        sqliteDB.commit()
-
-        #add class_id
-        try:
-            cur.execute("SELECT class_id FROM item")
-            cur.fetchone()
-        except sqlite3.OperationalError:
-            sqliteDB.execute('ALTER TABLE item ADD class_id INTEGER')
-        try:
-            cur.execute("SELECT class_id FROM delete_item")
-            cur.fetchone()
-        except sqlite3.OperationalError:
-            sqliteDB.execute('ALTER TABLE delete_item ADD class_id INTEGER')
-    sqliteDB.close()
-
 
 def backupDB(dbName, backFileName):
     with open(dbName, 'rb') as read:
@@ -288,3 +261,40 @@ def deleteDeleteItem(itemId):
     c.close()
     conn.close()
     pass
+
+######################################### category  ######################################
+
+def init_category():
+    sqliteDB = sqlite3.connect(DATABASE)
+    cur = sqliteDB.cursor()
+    try:
+        cur.execute('SELECT * FROM category')
+        cur.fetchone()
+    except sqlite3.OperationalError:
+        sqliteDB.execute('CREATE TABLE IF NOT EXISTS category (id INTEGER PRIMARY KEY AUTOINCREMENT, createTime TIMESTAMP, name TEXT)')
+        sqliteDB.execute('INSERT INTO category (createTime, name) VALUES(datetime("now", "localtime"), "202")')
+        sqliteDB.execute('INSERT INTO category (createTime, name) VALUES(datetime("now", "localtime"), "272")')
+        sqliteDB.execute('INSERT INTO category (createTime, name) VALUES(datetime("now", "localtime"), "273")')
+        sqliteDB.execute('INSERT INTO category (createTime, name) VALUES(datetime("now", "localtime"), "others")')
+        sqliteDB.commit()
+
+        #add class_id
+        try:
+            cur.execute("SELECT category_id FROM item")
+            cur.fetchone()
+        except sqlite3.OperationalError:
+            sqliteDB.execute('ALTER TABLE item ADD category_id INTEGER DEFAULT 1')
+        try:
+            cur.execute("SELECT category_id FROM deleteItem")
+            cur.fetchone()
+        except sqlite3.OperationalError:
+            sqliteDB.execute('ALTER TABLE deleteItem ADD category_id INTEGER DEFAULT 1')
+    cur.close()
+    sqliteDB.close()
+
+#return list[][], column0 is id, column[1] is name
+def getCategoryList():
+    sqliteDB = sqlite3.connect(DATABASE)
+    cur = sqliteDB.cursor()
+    cur.execute("SELECT id, name FROM category")
+    return cur.fetchall()

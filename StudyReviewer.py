@@ -16,6 +16,7 @@ class StudyReviewerWindow(tk.Frame):
 
     def __init__(self, master):
         super().__init__(master)
+        master.resizable(0, 0)
         self.master = master
         self.qPic = None
         self.aPic = None
@@ -42,16 +43,13 @@ class StudyReviewerWindow(tk.Frame):
         self.deleteBtn = tk.Button(self.controlFrame, text='Delete', command  = self.deleteCurrentItem)
         self.controlLable = tk.Label(self.controlFrame);
         self.classList = tk.Listbox(self.controlFrame);
-        self.classList.insert(0,"202")
-        self.classList.insert(1,"272")
-        self.classList.insert(2,"273")
-        self.classList.insert(3,"others")
-        self.classDic = {
-            "202" : 1,
-            "272" : 2,
-            "273" : 3,
-            "others" : 4
-        }
+  
+        categoryList = db.getCategoryList()
+        self.classDic = dict()
+        for row in categoryList:
+            self.classList.insert(row[0], row[1])
+            self.classDic[row[1]] = row[0]
+            print(row)
 
         self.showBtn = tk.Button(self.nextFrame, text='ShowAnswer', command  = self.showAnswer)
         self.nextXBtn = tk.Button(self.nextFrame, text='Next-X', command  = self.clickNextX)
@@ -154,9 +152,10 @@ class StudyReviewerWindow(tk.Frame):
         sound.ding()
 
     def addItem(self):
-        # state = self.classList.get(tk.ANCHOR)
-        # index = self.classDic[state]
-        # print(f"select {index}")
+        selected = self.classList.get(tk.ANCHOR)
+        # index = self.classList.get(0,'end').index(selected)
+        index = self.classDic[selected]
+        print(f"select {selected}, {index}")
         res = db.saveCurrentItemToDB("qPic.png", "aPic.png")
         if res == None:
             addedCount = db.countFromDB(createdToday=True)
@@ -215,6 +214,7 @@ class StudyReviewerWindow(tk.Frame):
 #============================================================================
 # main
 #============================================================================
+
 if __name__ == "__main__":
     root = tk.Tk()
     window = StudyReviewerWindow(root)

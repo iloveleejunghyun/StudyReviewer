@@ -89,7 +89,7 @@ if __name__ == "__main__":
     root=tk.Tk()
     entry = tk.Entry(root, text="terwrwe")
     global qPic
-    qPic = tk.PhotoImage(file="1.png")
+    qPic = tk.PhotoImage(file="qPic.png")
     frame = QAFrame(root, None, None)
     entry.pack()
     frame.pack()
