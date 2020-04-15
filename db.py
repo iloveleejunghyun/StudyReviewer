@@ -121,7 +121,7 @@ def insertItemToDB(id, qPic, aPic, createTime, lastShowTime, lastFailTime, passT
     c.execute("INSERT INTO item(id, qPic, aPic, createTime, lastShowTime, lastFailTime, passTimes, failTimes) VALUES(?,?,?,?,?,?,?,?)"
            , (id, qPic, aPic, createTime, lastShowTime, lastFailTime, passTimes, failTimes))
     conn.commit()
-    print(c.fetchone())
+    # print(c.fetchone())
     c.close()
     conn.close()
     return True
@@ -159,7 +159,7 @@ def readNextItemFromDB(itemId = None):
         #no data in current database
         print("no data in database to show")
         return False, 0, 0, 0, 0, 0
-    print(item[0])
+    # print(item[0])
     currentItemId = item[0]
     # c.execute("UPDATE item SET lastShowTime = datetime('now', 'localtime') WHERE id=?", (currentItemId,))
     # conn.commit()

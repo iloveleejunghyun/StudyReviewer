@@ -45,7 +45,7 @@ class dbtest(unittest.TestCase):
         time = datetime.datetime.now()
         time = time.strftime("%Y-%m-%d %H:%M:%S")
         db.insertItemToDB(0,None, None, time, time, time, 1, 2 );
-        res, passTimes, failTimes, lastFailTime, lastShowTime = db.readNextItemFromDB(0)
+        res, passTimes, failTimes, lastFailTime, lastShowTime, category_id = db.readNextItemFromDB(0)
         print(res, passTimes, failTimes, lastFailTime)
         db.deleteItemFromDB(0)
         self.assertTrue(res)
@@ -59,7 +59,7 @@ class dbtest(unittest.TestCase):
         db.insertItemToDB(0,None, None, time, time, time, 1, 2 );
         db.updateCurrentItem(0, True, '+1', '+1')
         
-        res, passTimes, failTimes, lastFailTime, lastShowTime = db.readNextItemFromDB(0)
+        res, passTimes, failTimes, lastFailTime, lastShowTime, category_id = db.readNextItemFromDB(0)
         time = datetime.datetime.now()
         time = time.strftime("%Y-%m-%d %H:%M:%S")
         db.deleteItemFromDB(0)
@@ -78,7 +78,7 @@ class dbtest(unittest.TestCase):
         time = '2020-03-25 00:00:47'
         db.insertItemToDB(0,None, None, time, time, time, 1, 2 )
         db.moveItemToDeleteItem(itemId)
-        res, passTimes, failTimes, lastFailTime, lastShowTime = db.readNextItemFromDB(itemId)
+        res, passTimes, failTimes, lastFailTime, lastShowTime, category_id = db.readNextItemFromDB(itemId)
         self.assertFalse(res)
         res, passTimes, failTimes, lastFailTime, lastShowTime = db.readDeleteItem(itemId)
         self.assertTrue(res)

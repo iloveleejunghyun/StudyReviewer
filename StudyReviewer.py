@@ -53,7 +53,7 @@ class StudyReviewerWindow(tk.Frame):
             self.classDic[row[1]] = row[0] # key=name, value=id
             self.categoryIdToIndex[row[0]] = i # key=category_id, value=index in listBox
             i += 1
-            print(row)
+            # print(row)
 
         self.showBtn = tk.Button(self.nextFrame, text='ShowAnswer', command  = self.showAnswer)
         self.nextXBtn = tk.Button(self.nextFrame, text='Next-X', command  = self.clickNextX)
@@ -75,6 +75,7 @@ class StudyReviewerWindow(tk.Frame):
         self.deleteBtn.pack(side='left')
         self.controlLable.pack(side='left')
         self.classList.pack(side='left', anchor='w')
+        self.classList.config(height = len(categoryList))
 
         self.nextXBtn.pack(side='left')
         self.nextVBtn.pack(side='left')
@@ -104,7 +105,7 @@ class StudyReviewerWindow(tk.Frame):
         self.firstClick = True # update click count
         res, passTimes, failTimes, lastFailTime, lastShowTime, category_id = db.readNextItemFromDB()
         if res:
-            print(f"category_id={category_id}")
+            print(f"read category_id={category_id}")
             # global qPicLabel , qPic #有生命周期的问题，必须使用全局变量
             self.qPic = tk.PhotoImage(file="qPic.png")
 
@@ -116,7 +117,14 @@ class StudyReviewerWindow(tk.Frame):
 
             self.lastReviewTimeLabel.configure(text=f"Last failed time:{lastFailTime}")
             self.passedFailedTimesLabel.configure(text=f"Passed/Failed:{passTimes}/{failTimes}")
-            self.classList.select_set(self.categoryIdToIndex[category_id])
+            # self.classList.selection_set(0,0)
+            self.classList.selection_clear(0, tk.END)
+            index = self.categoryIdToIndex[category_id]
+            self.classList.selection_set(index)
+            self.classList.see(index)
+            self.classList.activate(index)
+            self.classList.selection_anchor(index)
+            # self.classList.select_anchor(self.categoryIdToIndex[category_id])
         else:
             messagebox.showinfo("warn", "Nothing need to review today")
         reviewedCount, totalCount = db.getReviewItemCountToday()
@@ -184,7 +192,7 @@ class StudyReviewerWindow(tk.Frame):
     def clickNextV(self):
         if self.checkFirstClick():
             return
-        selected = self.classList.get(tk.ANCHOR)
+        selected = self.classList.selection_get()
         category_id = self.classDic[selected]
         print(f"select {selected}, {category_id}")
         db.updateCurrentItem(lastShowTime=True, passTimes='+1', category_id=category_id)
@@ -193,7 +201,7 @@ class StudyReviewerWindow(tk.Frame):
     def clickNextX(self):
         if self.checkFirstClick():
             return
-        selected = self.classList.get(tk.ANCHOR)
+        selected = self.classList.selection_get()
         category_id = self.classDic[selected]
         print(f"select {selected}, {category_id}")
         db.updateCurrentItem(lastShowTime=True, failTimes='+1', category_id=category_id)
@@ -220,8 +228,8 @@ class StudyReviewerWindow(tk.Frame):
             self.clickNextV()
             
         print("ke.keysym", ke.keysym)  # 按键别名
-        print("ke.char", ke.char)  # 按键对应的字符
-        print("ke.keycode", ke.keycode)  # 按键的唯一代码，用于判断按下的是哪个键</class></key></button-1>
+        # print("ke.char", ke.char)  # 按键对应的字符
+        # print("ke.keycode", ke.keycode)  # 按键的唯一代码，用于判断按下的是哪个键</class></key></button-1>
 #============================================================================
 # main
 #============================================================================
