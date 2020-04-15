@@ -43,12 +43,16 @@ class StudyReviewerWindow(tk.Frame):
         self.deleteBtn = tk.Button(self.controlFrame, text='Delete', command  = self.deleteCurrentItem)
         self.controlLable = tk.Label(self.controlFrame);
         self.classList = tk.Listbox(self.controlFrame);
-  
         categoryList = db.getCategoryList()
         self.classDic = dict()
+        self.categoryIdToIndex = dict()
+
+        i = 0
         for row in categoryList:
             self.classList.insert(row[0], row[1])
-            self.classDic[row[1]] = row[0]
+            self.classDic[row[1]] = row[0] # key=name, value=id
+            self.categoryIdToIndex[row[0]] = i # key=category_id, value=index in listBox
+            i += 1
             print(row)
 
         self.showBtn = tk.Button(self.nextFrame, text='ShowAnswer', command  = self.showAnswer)
@@ -70,7 +74,7 @@ class StudyReviewerWindow(tk.Frame):
         self.addBtn.pack(side='left')
         self.deleteBtn.pack(side='left')
         self.controlLable.pack(side='left')
-        # self.classList.pack(side='left', anchor='w')
+        self.classList.pack(side='left', anchor='w')
 
         self.nextXBtn.pack(side='left')
         self.nextVBtn.pack(side='left')
@@ -98,8 +102,9 @@ class StudyReviewerWindow(tk.Frame):
 
     def showNextItem(self):
         self.firstClick = True # update click count
-        res, passTimes, failTimes, lastFailTime, lastShowTime = db.readNextItemFromDB()
+        res, passTimes, failTimes, lastFailTime, lastShowTime, category_id = db.readNextItemFromDB()
         if res:
+            print(f"category_id={category_id}")
             # global qPicLabel , qPic #有生命周期的问题，必须使用全局变量
             self.qPic = tk.PhotoImage(file="qPic.png")
 
@@ -111,6 +116,7 @@ class StudyReviewerWindow(tk.Frame):
 
             self.lastReviewTimeLabel.configure(text=f"Last failed time:{lastFailTime}")
             self.passedFailedTimesLabel.configure(text=f"Passed/Failed:{passTimes}/{failTimes}")
+            self.classList.select_set(self.categoryIdToIndex[category_id])
         else:
             messagebox.showinfo("warn", "Nothing need to review today")
         reviewedCount, totalCount = db.getReviewItemCountToday()
@@ -153,10 +159,9 @@ class StudyReviewerWindow(tk.Frame):
 
     def addItem(self):
         selected = self.classList.get(tk.ANCHOR)
-        # index = self.classList.get(0,'end').index(selected)
-        index = self.classDic[selected]
-        print(f"select {selected}, {index}")
-        res = db.saveCurrentItemToDB("qPic.png", "aPic.png")
+        category_id = self.classDic[selected]
+        print(f"select {selected}, {category_id}")
+        res = db.saveCurrentItemToDB("qPic.png", "aPic.png", category_id)
         if res == None:
             addedCount = db.countFromDB(createdToday=True)
             self.todayAddedCountLabel.config(text=f"Today Added: {addedCount}")
@@ -179,13 +184,19 @@ class StudyReviewerWindow(tk.Frame):
     def clickNextV(self):
         if self.checkFirstClick():
             return
-        db.updateCurrentItem(lastShowTime=True, passTimes='+1')
+        selected = self.classList.get(tk.ANCHOR)
+        category_id = self.classDic[selected]
+        print(f"select {selected}, {category_id}")
+        db.updateCurrentItem(lastShowTime=True, passTimes='+1', category_id=category_id)
         self.showNextItem()
 
     def clickNextX(self):
         if self.checkFirstClick():
             return
-        db.updateCurrentItem(lastShowTime=True, failTimes='+1')
+        selected = self.classList.get(tk.ANCHOR)
+        category_id = self.classDic[selected]
+        print(f"select {selected}, {category_id}")
+        db.updateCurrentItem(lastShowTime=True, failTimes='+1', category_id=category_id)
         self.showNextItem()
 
     def showAnswer(self):

@@ -96,7 +96,7 @@ def findSameImages(qRes, aRes):
     print("find data in db")
     return True
 
-def saveCurrentItemToDB(qPicAddress, aPicAddress):
+def saveCurrentItemToDB(qPicAddress, aPicAddress, category_id):
     with open(qPicAddress, "rb") as f1:
         with open(aPicAddress, "rb") as f2:
             qRes = base64.b64encode(f1.read())
@@ -106,7 +106,7 @@ def saveCurrentItemToDB(qPicAddress, aPicAddress):
                 return "Already stored same images!";
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
-            c.execute("INSERT INTO item(qPic, aPic, createTime, lastShowTime, lastFailTime) VALUES(?,?,datetime('now', 'localtime'),datetime('now', 'localtime'), datetime('now', 'localtime'))", (qRes, aRes))
+            c.execute("INSERT INTO item(qPic, aPic, createTime, lastShowTime, lastFailTime, category_id) VALUES(?,?,datetime('now', 'localtime'),datetime('now', 'localtime'), datetime('now', 'localtime'), ?)", (qRes, aRes, category_id))
             conn.commit()
             c.close()
             conn.close()
@@ -126,7 +126,7 @@ def insertItemToDB(id, qPic, aPic, createTime, lastShowTime, lastFailTime, passT
     conn.close()
     return True
 
-def updateCurrentItem(itemId = None, lastShowTime = None, passTimes = None, failTimes = None):
+def updateCurrentItem(category_id, itemId = None, lastShowTime = None, passTimes = None, failTimes = None):
     #update current item last_show_time
     if itemId == None:
         global currentItemId
@@ -135,11 +135,11 @@ def updateCurrentItem(itemId = None, lastShowTime = None, passTimes = None, fail
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
         if lastShowTime == True:
-            c.execute("UPDATE item SET lastShowTime=datetime('now', 'localtime') WHERE id=?", (itemId,))
+            c.execute("UPDATE item SET lastShowTime=datetime('now', 'localtime'), category_id=? WHERE id=?", (category_id, itemId))
         if passTimes == '+1':
-             c.execute("UPDATE item SET passTimes=passTimes+1 WHERE id=?", (itemId,))
+             c.execute("UPDATE item SET passTimes=passTimes+1, category_id=? WHERE id=?", (category_id, itemId))
         if failTimes == '+1':
-            c.execute("UPDATE item SET failTimes=failTimes+1, lastFailTime=datetime('now', 'localtime') WHERE id=?", (itemId,))
+            c.execute("UPDATE item SET failTimes=failTimes+1, lastFailTime=datetime('now', 'localtime'), category_id=? WHERE id=?", (category_id, itemId))
         conn.commit()
         c.close()
         conn.close()
@@ -150,15 +150,15 @@ def readNextItemFromDB(itemId = None):
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     if itemId != None:
-        c.execute("SELECT id, qPic, aPic, passTimes, failTimes, lastFailTime, lastShowTime FROM item WHERE id=(?)", (itemId,))
+        c.execute("SELECT id, qPic, aPic, passTimes, failTimes, lastFailTime, lastShowTime, category_id FROM item WHERE id=(?)", (itemId,))
     else:
-        c.execute("SELECT id, qPic, aPic, passTimes, failTimes, lastFailTime, lastShowTime e FROM item WHERE DATE(lastShowTime) != DATE('now', 'localtime') and DATE(lastFailTime) in (DATE('now', 'localtime', '-1 day'), DATE('now', 'localtime', '-2 day'), DATE('now', 'localtime', '-4 day'), DATE('now', 'localtime', '-7 day'), DATE('now', 'localtime', '-14 day') ) order by lastFailTime ASC")
+        c.execute("SELECT id, qPic, aPic, passTimes, failTimes, lastFailTime, lastShowTime, category_id FROM item WHERE DATE(lastShowTime) != DATE('now', 'localtime') and DATE(lastFailTime) in (DATE('now', 'localtime', '-1 day'), DATE('now', 'localtime', '-2 day'), DATE('now', 'localtime', '-4 day'), DATE('now', 'localtime', '-7 day'), DATE('now', 'localtime', '-14 day') ) order by lastFailTime ASC")
 
     item = c.fetchone()
     if item == None:
         #no data in current database
         print("no data in database to show")
-        return False, 0, 0, 0, 0
+        return False, 0, 0, 0, 0, 0
     print(item[0])
     currentItemId = item[0]
     # c.execute("UPDATE item SET lastShowTime = datetime('now', 'localtime') WHERE id=?", (currentItemId,))
@@ -180,7 +180,8 @@ def readNextItemFromDB(itemId = None):
     failTimes = item[4]
     lastFailTime = item[5]
     lastShowTime = item[6]
-    return True, passTimes, failTimes, lastFailTime, lastShowTime
+    category_id = item[7]
+    return True, passTimes, failTimes, lastFailTime, lastShowTime, category_id
 
 
 def deleteCurrentItemFromDB():
